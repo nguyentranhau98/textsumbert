@@ -182,10 +182,6 @@ class AbsSummarizer(nn.Module):
         self.device = device
         self.bert = Bert(args.large, args.temp_dir, args.finetune_bert)
 
-        if bert_from_extractive is not None:
-            self.bert.model.load_state_dict(
-                dict([(n[11:], p) for n, p in bert_from_extractive.items() if n.startswith('bert.model')]), strict=True)
-
         if (args.encoder == 'baseline'):
             bert_config = BertConfig(self.bert.model.config.vocab_size, hidden_size=args.enc_hidden_size,
                                      num_hidden_layers=args.enc_layers, num_attention_heads=8,
@@ -212,6 +208,9 @@ class AbsSummarizer(nn.Module):
         self.generator = get_generator(self.vocab_size, self.args.dec_hidden_size, device)
         self.generator[0].weight = self.decoder.embeddings.weight
 
+        if bert_from_extractive is not None:
+            self.bert.model.load_state_dict(
+                dict([(n[11:], p) for n, p in bert_from_extractive.items() if n.startswith('bert.model')]), strict=True)
 
         if checkpoint is not None:
             self.load_state_dict(checkpoint['model'], strict=True)

@@ -328,7 +328,7 @@ class Translator(object):
 
             # Append last prediction.
             alive_seq = torch.cat(
-                [alive_seq.index_select(0, select_indices),
+                [alive_seq.index_select(0, select_indices.type(torch.int64)),
                  topk_ids.view(-1, 1)], -1)
 
             is_finished = topk_ids.eq(self.end_token)
@@ -369,9 +369,9 @@ class Translator(object):
                     .view(-1, alive_seq.size(-1))
             # Reorder states.
             select_indices = batch_index.view(-1)
-            src_features = src_features.index_select(0, select_indices)
+            src_features = src_features.index_select(0, select_indices.type(torch.int64))
             dec_states.map_batch_fn(
-                lambda state, dim: state.index_select(dim, select_indices))
+                lambda state, dim: state.index_select(dim, select_indices.type(torch.int64)))
 
         return results
 
